@@ -68,6 +68,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{sort, sort_by};
+    use crate::utils::{is_sorted_ascending, is_sorted_descending, new_u32_vec};
     use crate::SortOrder::*;
 
     #[derive(Debug, PartialEq)]
@@ -199,5 +200,19 @@ mod tests {
             Ok(())
         );
         assert_eq!(x, expected);
+    }
+
+    #[test]
+    fn sort_u32_large() {
+        {
+            let mut x = new_u32_vec(65536);
+            assert!(sort(&mut x, &Ascending).is_ok());
+            assert!(is_sorted_ascending(&x));
+        }
+        {
+            let mut x = new_u32_vec(65536);
+            assert!(sort(&mut x, &Descending).is_ok());
+            assert!(is_sorted_descending(&x));
+        }
     }
 }
