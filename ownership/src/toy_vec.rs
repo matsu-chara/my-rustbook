@@ -3,6 +3,12 @@ pub struct ToyVec<T> {
     len: usize,
 }
 
+pub struct Iter<'vec, T> {
+    elements: &'vec Box<[T]>,
+    len: usize,
+    pos: usize,
+}
+
 impl<T: Default> ToyVec<T> {
     pub fn new() -> Self {
         Self::with_capacity(0)
@@ -64,7 +70,49 @@ impl<T: Default> ToyVec<T> {
             None => default,
         }
     }
+
+    pub fn pop(&mut self) -> Option<T> {
+        if self.len == 0 {
+            None
+        } else {
+            self.len -= 1;
+            let elem = std::mem::replace(&mut self.elements[self.len], Default::default());
+            Some(elem)
+        }
+    }
+
+    pub fn iter(& self) -> Iter<T> {
+        Iter {
+            elements: &self.elements,
+            len: self.len,
+            pos: 0
+        }
+    }
 }
+
+impl<'vec, T> Iterator for Iter<'vec, T> {
+    type Item = &'vec T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos >= self.len {
+            None
+        } else {
+            let res = Some(&self.elements[self.pos]);
+            self.pos += 1;
+            res
+        }
+    }
+}
+
+impl <'vec, T: Default> IntoIterator for &'vec ToyVec<T> {
+    type Item = &'vec T;
+    type IntoIter = Iter<'vec, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -77,5 +125,31 @@ mod tests {
         v.push("Budgerigar".to_string());
         let e = v.get(1);
         assert_eq!(e, Some(&"Budgerigar".to_string()));
+    }
+
+    #[test]
+    fn push_and_pop() {
+        let mut v = ToyVec::new();
+        v.push("Java Finch".to_string());
+        v.push("Budgerigar".to_string());
+        let e1 = v.pop();
+        assert_eq!(e1, Some("Budgerigar".to_string()));
+        let e2 = v.pop();
+        assert_eq!(e2, Some("Java Finch".to_string()));
+        let e3 = v.pop();
+        assert_eq!(e3, None);
+    }
+
+    #[test]
+    fn iter() {
+        let mut v = ToyVec::new();
+        v.push("Java Finch".to_string());
+        v.push("Budgerigar".to_string());
+
+        let mut iter = v.iter();
+        assert_eq!(iter.next(), Some(&"Java Finch".to_string()));
+        assert_eq!(iter.next(), Some(&"Budgerigar".to_string()));
+        assert_eq!(iter.next(), None);
+        v.push("Canary".to_string()); // can compile
     }
 }
