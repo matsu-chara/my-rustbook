@@ -13,6 +13,10 @@ failure = "0.1.5"
 mime = "0.3.13"
 dotenv = "0.14.0"
 chrono = "0.4.6"
+csv = "1.0.7"
+actix-web-multipart-file = "0.1.1"
+futures = "0.1.27"
+itertools = "0.8.0"
 
 [dependencies.diesel]
 features = ["postgres", "chrono", "r2d2"]
